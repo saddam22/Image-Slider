@@ -6,24 +6,23 @@ let current = 0;
 //show slide function
 function showSlide(index){
 	slides.forEach((slide, i) =>{
-		slide.classList.remove("active");
-		slide.style.display = "none";
+		slide.classList.remove("opacity-100");
+		slide.classList.add("opacity-0");
+
 		dots[i].classList.remove("bg-blue-500");
 		dots[i].classList.add("bg-gray-400");
 	});
 
-	slides[index].style.display = "block";
-	slides[index].classList.add("active");
+	slides[index].classList.remove("opacity-0");
+	slides[index].classList.add("opacity-100");
 	dots[index].classList.add("bg-blue-500")
 }
 
-//Next Slide
+//Next / Prev
 function nextSlide(){
 	current = (current + 1) % slides.length;
 	showSlide(current);
 }
-
-//Previous Slide
 function prevSlide(){
 	current = (current - 1 + slides.length) % slides.length;
 	showSlide(current);
@@ -34,14 +33,53 @@ dots.forEach((dot, i) => {
 	dot.addEventListener('click', () =>{
 		current = i;
 		showSlide(current);
+		resetInterval();
 	});
 });
 
-//initial display
-showSlide(current);
-
 //Auto Slide
-setInterval(nextSlide, 4000);
+let slideInterval = setInterval(nextSlide, 4000);
 
-document.getElementById("next").addEventListener("click", nextSlide);
-document.getElementById("prev").addEventListener("click", prevSlide);
+
+//Reset interval after manual click
+function resetInterval(){
+	clearInterval(slideInterval);
+	slideInterval = setInterval(nextSlide, 4000);
+}
+
+//buttons
+document.getElementById("next").addEventListener("click", () =>{
+	nextSlide();
+	resetInterval();
+});
+
+document.getElementById("prev").addEventListener("click", () =>{
+	prevSlide();
+	resetInterval();
+});
+
+//swipe support for mobile
+let startX = 0;
+let endX = 0;
+const sliderContainer = document.getElementById("slider");
+
+sliderContainer.addEventListener("touchstart", e => { 
+	startX = e.touches[0].clientX; 
+});
+
+sliderContainer.addEventListener("touchend", e => {
+	endX = e.changedTouches[0].clientX;
+	
+	if(endX - startX > 50) prevSlide();
+	if(startX - endX > 50) nextSlide();
+	resetInterval();
+});
+
+document.getElementById("prev").addEventListener("click", () =>{
+	prevSlide();
+	resetInterval();
+});
+
+
+//Initial Show
+showSlide(current);
